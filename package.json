@@ -1,14 +1,13 @@
 {
   "name": "api-vending-machine",
   "version": "1.0.0",
-  "description": "API para liberação de dose via PIX",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
     "aedes": "^0.51.0",
-    "websocket-stream": "^5.5.2"
+    "express": "^4.19.2",
+    "efi-node-sdk": "1.0.4"
   }
 }
