@@ -10,12 +10,14 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
     body {
       background: black;
       height: 100vh;
       overflow: hidden;
+      color: white;
     }
 
     .tela {
@@ -26,73 +28,186 @@
 
     .ativa {
       display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     /* 🔥 TELA INICIAL */
     #inicio {
-      width: 100%;
-      height: 100vh;
+      justify-content: center;
+      align-items: center;
 
       background-image: url("./mqn_copao.png");
       background-repeat: no-repeat;
       background-position: center;
       background-size: contain;
 
-      animation: brilho 2s infinite alternate;
+      animation: acender 0.6s ease-out forwards;
     }
 
-    @keyframes brilho {
+    @keyframes acender {
       from {
-        filter: brightness(0.85);
+        filter: brightness(0);
       }
       to {
-        filter: brightness(1.15);
+        filter: brightness(1);
       }
     }
 
-    /* 🍹 TELA DE BEBIDAS */
+    /* 🛒 TELA DE BEBIDAS */
     #bebidas {
+      display: flex;
+    }
+
+    /* lado esquerdo (produtos) */
+    .produtos {
+      width: 70%;
       background: #111;
-      flex-direction: column;
+      padding: 20px;
+
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 20px;
     }
 
-    .botao {
-      width: 80%;
-      max-width: 400px;
-      padding: 20px;
-      font-size: 1.5rem;
-      border: none;
+    .card {
+      background: #222;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .imagem {
+      width: 100%;
+      height: 150px;
+      background: #333;
       border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .nome {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .preco {
+      font-size: 1.4rem;
+      color: #00e676;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
       background: #00c853;
       color: white;
+      font-size: 1rem;
     }
+
+    /* lado direito (carrinho) */
+    .carrinho {
+      width: 30%;
+      background: #000;
+      border-left: 2px solid #222;
+      padding: 20px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .carrinho h2 {
+      margin-bottom: 20px;
+    }
+
+    .itens {
+      flex: 1;
+    }
+
+    .total {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+
   </style>
 </head>
 
 <body>
 
+  <!-- TELA INICIAL -->
   <div id="inicio" class="tela ativa"></div>
 
+  <!-- TELA DE BEBIDAS -->
   <div id="bebidas" class="tela">
-    <button class="botao" onclick="selecionarBebida(1)">Gin + Energético 1</button>
-    <button class="botao" onclick="selecionarBebida(2)">Gin + Energético 2</button>
-    <button class="botao" onclick="selecionarBebida(3)">Gin Puro</button>
+
+    <!-- PRODUTOS -->
+    <div class="produtos">
+
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+        <div class="preco">R$ 15,00</div>
+        <button class="btn" onclick="addItem('Tropical', 15)">Adicionar</button>
+      </div>
+
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+        <div class="preco">R$ 15,00</div>
+        <button class="btn" onclick="addItem('Melancia', 15)">Adicionar</button>
+      </div>
+
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN TROPICAL PURO DOSE</div>
+        <div class="preco">R$ 10,00</div>
+        <button class="btn" onclick="addItem('Tropical Puro', 10)">Adicionar</button>
+      </div>
+
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN MELANCIA PURO DOSE</div>
+        <div class="preco">R$ 10,00</div>
+        <button class="btn" onclick="addItem('Melancia Puro', 10)">Adicionar</button>
+      </div>
+
+    </div>
+
+    <!-- CARRINHO -->
+    <div class="carrinho">
+      <h2>Carrinho</h2>
+
+      <div class="itens" id="itens"></div>
+
+      <div class="total" id="total">Total: R$ 0,00</div>
+    </div>
+
   </div>
 
   <script>
     const telaInicio = document.getElementById("inicio");
     const telaBebidas = document.getElementById("bebidas");
 
+    let total = 0;
+
     telaInicio.addEventListener("click", () => {
       telaInicio.classList.remove("ativa");
       telaBebidas.classList.add("ativa");
     });
 
-    function selecionarBebida(tipo) {
-      alert("Selecionado: " + tipo);
+    function addItem(nome, valor) {
+      const lista = document.getElementById("itens");
+
+      const item = document.createElement("div");
+      item.innerText = nome + " - R$ " + valor.toFixed(2);
+
+      lista.appendChild(item);
+
+      total += valor;
+
+      document.getElementById("total").innerText =
+        "Total: R$ " + total.toFixed(2);
     }
   </script>
 
