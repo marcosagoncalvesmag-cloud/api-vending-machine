@@ -1,48 +1,163 @@
-<script>
-        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; 
-        const telaInicio = document.getElementById("inicio");
-        const telaBebidas = document.getElementById("bebidas");
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquina do Copão</title>
+    
+    <style>
+        /* RESET E BASE */
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #0f0f0f; 
+            color: white; 
+            overflow: hidden; 
+        }
 
-        // Cria a tela de pagamento dinamicamente no DOM
-        document.body.insertAdjacentHTML('beforeend', `
-            <div id="pagamento" class="tela" style="flex-direction:column; align-items:center; justify-content:center; background:#000;">
-                <h2 id="msg-status">Gerando QR Code...</h2>
-                <img id="qr-code-img" src="" style="width:250px; background:white; padding:10px;">
+        /* GERENCIAMENTO DE TELAS */
+        .tela { 
+            position: absolute; 
+            width: 100vw; 
+            height: 100vh; 
+            top: 0; 
+            left: 0; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.6s ease; 
+        }
+        .ativa { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+
+        /* TELA INICIAL */
+        #inicio { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background-color: black; 
+            cursor: pointer;
+        }
+        #inicio img { 
+            max-width: 95vw; 
+            max-height: 95vh; 
+            object-fit: contain; 
+        }
+
+        /* TELA DE BEBIDAS */
+        #bebidas {
+            overflow-y: auto; /* Permite scroll se tiver muitos itens */
+            padding-bottom: 20px;
+        }
+        .container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px; 
+            padding: 20px; 
+        }
+
+        /* CARDS */
+        .card { 
+            background: #1a1a1a; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            box-shadow: 0 0 15px rgba(255, 106, 0, 0.2); 
+            transition: transform 0.3s; 
+        }
+        .card:hover { transform: scale(1.02); }
+        .card img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            background-color: #333; 
+        }
+        .info { padding: 15px; }
+        .nome { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; min-height: 3em; }
+        .preco { font-size: 1.3rem; color: #ff6a00; font-weight: bold; margin-bottom: 10px; }
+        
+        .botao { 
+            width: 100%; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            background: linear-gradient(45deg, #ff6a00, #ff3c00); 
+            color: white; 
+            font-size: 1rem; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: filter 0.2s;
+        }
+        .botao:hover { filter: brightness(1.2); }
+        .botao:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+        <img src="mqn_copao.png" alt="Máquina do Copão">
+    </div>
+
+    <!-- TELA BEBIDAS -->
+    <div id="bebidas" class="tela">
+        <div class="container">
+            
+            <!-- Item 1 -->
+            <div class="card">
+                <img src="combotropical.png" alt="Gin Tropical">
+                <div class="info">
+                    <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+                    <div class="preco">R$ 15,00</div>
+                    <button class="botao">Selecionar</button>
+                </div>
             </div>
-        `);
 
-        telaInicio.addEventListener("click", () => {
-            telaInicio.classList.remove("ativa");
-            telaBebidas.classList.add("ativa");
-        });
+            <!-- Item 2 -->
+            <div class="card">
+                <img src="combomelacia.png" alt="Gin Melancia">
+                <div class="info">
+                    <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+                    <div class="preco">R$ 15,00</div>
+                    <button class="botao">Selecionar</button>
+                </div>
+            </div>
 
-        async function addItem(nome, valor) {
-            telaBebidas.classList.remove("ativa");
-            document.getElementById("pagamento").classList.add("ativa");
-            document.getElementById("msg-status").innerText = "Gerando QR Code...";
+            <!-- Item 3 -->
+            <div class="card">
+                <img src="tropical.png" alt="Dose Tropical">
+                <div class="info">
+                    <div class="nome">GIN TROPICAL PURO DOSE</div>
+                    <div class="preco">R$ 10,00</div>
+                    <button class="botao">Selecionar</button>
+                </div>
+            </div>
 
-            // Inicia a comunicação direta com o servidor
-            const res = await fetch(`${API_URL}/criar-pagamento`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bebida: nome })
-            });
-            const data = await res.json();
+            <!-- Item 4 -->
+            <div class="card">
+                <img src="melancia.png" alt="Dose Melancia">
+                <div class="info">
+                    <div class="nome">GIN MELANCIA PURO DOSE</div>
+                    <div class="preco">R$ 10,00</div>
+                    <button class="botao">Selecionar</button>
+                </div>
+            </div>
 
-            document.getElementById('qr-code-img').src = data.qrcode;
-            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
+        </div>
+    </div>
 
-            // Monitora o status via polling na mesma rota que o ESP usa
-            const intervalo = setInterval(async () => {
-                const statusRes = await fetch(`${API_URL}/verificar-acao`);
-                const statusData = await statusRes.json();
-
-                if (statusData.comando === "liberar") {
-                    clearInterval(intervalo);
-                    document.getElementById('msg-status').innerText = "Pagamento Aprovado!";
-                    document.getElementById('qr-code-img').style.display = 'none';
-                    setTimeout(() => location.reload(), 3000);
-                }
-            }, 1000);
+    <script>
+        function irParaBebidas() {
+            const inicio = document.getElementById("inicio");
+            const bebidas = document.getElementById("bebidas");
+            
+            inicio.classList.remove("ativa");
+            
+            setTimeout(() => {
+                bebidas.classList.add("ativa");
+            }, 300);
         }
     </script>
+</body>
+</html>
