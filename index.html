@@ -1,9 +1,9 @@
 <script>
-        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; // Sua URL
+        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; 
         const telaInicio = document.getElementById("inicio");
         const telaBebidas = document.getElementById("bebidas");
-        
-        // Adicionando uma tela de pagamento dinâmica no DOM
+
+        // Cria a tela de pagamento dinamicamente no DOM
         document.body.insertAdjacentHTML('beforeend', `
             <div id="pagamento" class="tela" style="flex-direction:column; align-items:center; justify-content:center; background:#000;">
                 <h2 id="msg-status">Gerando QR Code...</h2>
@@ -11,47 +11,28 @@
             </div>
         `);
 
-        let total = 0;
         telaInicio.addEventListener("click", () => {
             telaInicio.classList.remove("ativa");
             telaBebidas.classList.add("ativa");
         });
 
-        function addItem(nome, valor) {
-            const lista = document.getElementById("itens");
-            const item = document.createElement("div");
-            item.innerText = nome + " - R$ " + valor.toFixed(2);
-            lista.appendChild(item);
-            total += valor;
-            document.getElementById("total").innerText = "Total: R$ " + total.toFixed(2);
-            
-            // Adicionamos um botão de finalizar se não existir
-            if (!document.getElementById("btn-finalizar")) {
-                const btnFin = document.createElement("button");
-                btnFin.id = "btn-finalizar";
-                btnFin.innerText = "FINALIZAR PAGAMENTO";
-                btnFin.className = "btn";
-                btnFin.style.marginTop = "20px";
-                btnFin.onclick = finalizarCompra;
-                document.querySelector(".carrinho").appendChild(btnFin);
-            }
-        }
-
-        async function finalizarCompra() {
+        async function addItem(nome, valor) {
             telaBebidas.classList.remove("ativa");
             document.getElementById("pagamento").classList.add("ativa");
+            document.getElementById("msg-status").innerText = "Gerando QR Code...";
 
+            // Inicia a comunicação direta com o servidor
             const res = await fetch(`${API_URL}/criar-pagamento`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bebida: "Total: R$ " + total.toFixed(2) })
+                body: JSON.stringify({ bebida: nome })
             });
             const data = await res.json();
-            
-            document.getElementById('qr-code-img').src = data.qrcode;
-            document.getElementById('msg-status').innerText = "Escaneie o QR Code";
 
-            // Monitoramento
+            document.getElementById('qr-code-img').src = data.qrcode;
+            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
+
+            // Monitora o status via polling na mesma rota que o ESP usa
             const intervalo = setInterval(async () => {
                 const statusRes = await fetch(`${API_URL}/verificar-acao`);
                 const statusData = await statusRes.json();
@@ -59,6 +40,7 @@
                 if (statusData.comando === "liberar") {
                     clearInterval(intervalo);
                     document.getElementById('msg-status').innerText = "Pagamento Aprovado!";
+                    document.getElementById('qr-code-img').style.display = 'none';
                     setTimeout(() => location.reload(), 3000);
                 }
             }, 1000);
