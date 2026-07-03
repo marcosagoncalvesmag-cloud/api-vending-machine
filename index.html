@@ -31,7 +31,7 @@ body {
     pointer-events: auto;
 }
 
-/* TELA INICIAL */
+/* ===== TELA INICIAL CORRIGIDA ===== */
 #inicio {
     display: flex;
     align-items: center;
@@ -39,7 +39,16 @@ body {
     background-color: black;
 }
 
-/* GRID BEBIDAS */
+/* AQUI ESTÁ O AJUSTE CERTO */
+#inicio img {
+    max-width: 90vw;   /* limita largura */
+    max-height: 90vh;  /* limita altura */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* ===== BEBIDAS ===== */
 .container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -47,7 +56,6 @@ body {
     padding: 20px;
 }
 
-/* CARD */
 .card {
     background: #1a1a1a;
     border-radius: 15px;
@@ -158,10 +166,8 @@ function irParaBebidas() {
     const inicio = document.getElementById("inicio");
     const bebidas = document.getElementById("bebidas");
 
-    // inicia fade out
     inicio.classList.remove("ativa");
 
-    // espera terminar a animação e troca
     setTimeout(() => {
         bebidas.classList.add("ativa");
     }, 300);
