@@ -1,172 +1,215 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-
 <head>
+  <meta charset="UTF-8">
+  <title>Totem Bebidas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    body {
+      background: black;
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+    }
 
-    <title>Máquina do Copão</title>
+    .tela {
+      display: none;
+      width: 100%;
+      height: 100vh;
+    }
 
-    <style>
+    .ativa {
+      display: flex;
+    }
 
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #0f0f0f; color: white; overflow: hidden; }
+    /* 🔥 TELA INICIAL */
+    #inicio {
+      justify-content: center;
+      align-items: center;
 
-        .tela { position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+      background-image: url("./mqn_copao.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
 
-        .ativa { opacity: 1; pointer-events: auto; }
+      animation: acender 0.6s ease-out forwards;
+    }
 
-        
+    @keyframes acender {
+      from {
+        filter: brightness(0);
+      }
+      to {
+        filter: brightness(1);
+      }
+    }
 
-        #inicio img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: pointer; }
+    /* 🛒 TELA DE BEBIDAS */
+    #bebidas {
+      display: flex;
+    }
 
-        
+    /* lado esquerdo (produtos) */
+    .produtos {
+      width: 70%;
+      background: #111;
+      padding: 20px;
 
-        .container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; }
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
 
-        .card { background: #1a1a1a; border-radius: 15px; padding: 15px; text-align: center; }
+    .card {
+      background: #222;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-        .botao { background: linear-gradient(45deg, #ff6a00, #ff3c00); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+    .imagem {
+      width: 100%;
+      height: 150px;
+      background: #333;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
 
-        
+    .nome {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
 
-        #msg-status { font-size: 24px; margin-bottom: 20px; }
+    .preco {
+      font-size: 1.4rem;
+      color: #00e676;
+      margin-bottom: 10px;
+    }
 
-    </style>
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #00c853;
+      color: white;
+      font-size: 1rem;
+    }
 
+    /* lado direito (carrinho) */
+    .carrinho {
+      width: 30%;
+      background: #000;
+      border-left: 2px solid #222;
+      padding: 20px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .carrinho h2 {
+      margin-bottom: 20px;
+    }
+
+    .itens {
+      flex: 1;
+    }
+
+    .total {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+
+  </style>
 </head>
 
 <body>
 
+  <!-- TELA INICIAL -->
+  <div id="inicio" class="tela ativa"></div>
 
+  <!-- TELA DE BEBIDAS -->
+  <div id="bebidas" class="tela">
 
-    <!-- TELA INICIAL -->
+    <!-- PRODUTOS -->
+    <div class="produtos">
 
-    <div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+        <div class="preco">R$ 15,00</div>
+        <button class="btn" onclick="addItem('Tropical', 15)">Adicionar</button>
+      </div>
 
-        <img src="mqn_copao.png" alt="Início">
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+        <div class="preco">R$ 15,00</div>
+        <button class="btn" onclick="addItem('Melancia', 15)">Adicionar</button>
+      </div>
 
-    </div>
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN TROPICAL PURO DOSE</div>
+        <div class="preco">R$ 10,00</div>
+        <button class="btn" onclick="addItem('Tropical Puro', 10)">Adicionar</button>
+      </div>
 
-
-
-    <!-- TELA BEBIDAS -->
-
-    <div id="bebidas" class="tela">
-
-        <div class="container">
-
-            <div class="card">
-
-                <div class="nome">GIN TROPICAL</div>
-
-                <button class="botao" onclick="selecionarBebida('GIN TROPICAL')">Selecionar</button>
-
-            </div>
-
-            <!-- Adicione os outros cards aqui -->
-
-        </div>
-
-    </div>
-
-
-
-    <!-- TELA PAGAMENTO -->
-
-    <div id="pagamento" class="tela">
-
-        <h2 id="msg-status">Gerando QR Code...</h2>
-
-        <img id="qr-code-img" src="" style="width: 250px; background: white; padding: 10px;">
+      <div class="card">
+        <div class="imagem"></div>
+        <div class="nome">GIN MELANCIA PURO DOSE</div>
+        <div class="preco">R$ 10,00</div>
+        <button class="btn" onclick="addItem('Melancia Puro', 10)">Adicionar</button>
+      </div>
 
     </div>
 
+    <!-- CARRINHO -->
+    <div class="carrinho">
+      <h2>Carrinho</h2>
 
+      <div class="itens" id="itens"></div>
 
-    <script>
+      <div class="total" id="total">Total: R$ 0,00</div>
+    </div>
 
-        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; // MUDAR PARA A URL DO SERVIDOR
+  </div>
 
-        let pedidoIdAtual = null;
+  <script>
+    const telaInicio = document.getElementById("inicio");
+    const telaBebidas = document.getElementById("bebidas");
 
+    let total = 0;
 
+    telaInicio.addEventListener("click", () => {
+      telaInicio.classList.remove("ativa");
+      telaBebidas.classList.add("ativa");
+    });
 
-        function irParaBebidas() {
+    function addItem(nome, valor) {
+      const lista = document.getElementById("itens");
 
-            document.getElementById("inicio").classList.remove("ativa");
+      const item = document.createElement("div");
+      item.innerText = nome + " - R$ " + valor.toFixed(2);
 
-            document.getElementById("bebidas").classList.add("ativa");
+      lista.appendChild(item);
 
-        }
+      total += valor;
 
-
-
-        async function selecionarBebida(nome) {
-
-            document.getElementById('bebidas').classList.remove('ativa');
-
-            document.getElementById('pagamento').classList.add('ativa');
-
-
-
-            const res = await fetch(`${API_URL}/criar-pagamento`, {
-
-                method: 'POST',
-
-                headers: { 'Content-Type': 'application/json' },
-
-                body: JSON.stringify({ bebida: nome })
-
-            });
-
-            const data = await res.json();
-
-            
-
-            pedidoIdAtual = data.id;
-
-            document.getElementById('qr-code-img').src = data.qrcode;
-
-            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
-
-
-
-            verificarPagamento();
-
-        }
-
-
-
-        function verificarPagamento() {
-
-            const intervalo = setInterval(async () => {
-
-                const res = await fetch(`${API_URL}/status/${pedidoIdAtual}`);
-
-                const data = await res.json();
-
-
-
-                if (data.status === "pago") {
-
-                    clearInterval(intervalo);
-
-                    document.getElementById('msg-status').innerText = "Pagamento Aprovado! Posicione o copo e aperte o botão.";
-
-                    document.getElementById('qr-code-img').style.display = 'none';
-
-                }
-
-            }, 3000); // Verifica a cada 3 segundos
-
-        }
-
-    </script>
+      document.getElementById("total").innerText =
+        "Total: R$ " + total.toFixed(2);
+    }
+  </script>
 
 </body>
-
-</html> 
-
+</html>
