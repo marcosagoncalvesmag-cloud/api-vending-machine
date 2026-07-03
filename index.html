@@ -1,177 +1,134 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Máquina do Copão</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #0f0f0f;
-    color: white;
-    overflow: hidden;
+    background: #111;
+    color: #fff;
+    text-align: center;
 }
 
-/* TELAS */
 .tela {
-    position: absolute;
-    width: 100vw;
+    display: none;
     height: 100vh;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .ativa {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* ===== TELA INICIAL CORRIGIDA ===== */
-#inicio {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: black;
 }
 
-/* AQUI ESTÁ O AJUSTE CERTO */
-#inicio img {
-    max-width: 95vw;   /* limita largura */
-    max-height: 95vh;  /* limita altura */
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
-
-/* ===== BEBIDAS ===== */
-.container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+button {
     padding: 20px;
-}
-
-.card {
-    background: #1a1a1a;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
-    transition: transform 0.3s;
-    cursor: pointer;
-}
-
-.card:hover {
-    transform: scale(1.03);
-}
-
-.card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    background-color: #333;
-}
-
-.info {
-    padding: 15px;
-}
-
-.nome {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.preco {
+    margin: 10px;
     font-size: 20px;
-    color: #ff6a00;
-    font-weight: bold;
-}
-
-.botao {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
+    background: orange;
     border: none;
-    border-radius: 8px;
-    background: linear-gradient(45deg, #ff6a00, #ff3c00);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.botao:active {
-    transform: scale(0.95);
+    border-radius: 10px;
+    color: #000;
 }
 </style>
-
 </head>
 
 <body>
 
 <!-- TELA INICIAL -->
-<div id="inicio" class="tela ativa" onclick="irParaBebidas()">
-    <img src="mqn_copao.png">
+<div id="inicio" class="tela ativa">
+    <h1>Escolha sua bebida</h1>
+
+    <button onclick="escolherBebida(1)">Bebida 1 - R$0,50</button>
+    <button onclick="escolherBebida(2)">Bebida 2 - R$0,50</button>
+    <button onclick="escolherBebida(3)">Bebida 3 - R$0,50</button>
 </div>
 
-<!-- TELA BEBIDAS -->
-<div id="bebidas" class="tela">
-    <div class="container">
+<!-- TELA PAGAMENTO -->
+<div id="pagamento" class="tela">
+    <h1>Escaneie o QR Code</h1>
+    <img id="qrcode" src="" width="200">
+</div>
 
-        <div class="card">
-            <img src="combotropical.png">
-            <div class="info">
-                <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
-                <div class="preco">R$ 15,00</div>
-                <button class="botao">Selecionar</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="combomelacia.png">
-            <div class="info">
-                <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
-                <div class="preco">R$ 15,00</div>
-                <button class="botao">Selecionar</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="tropical.png">
-            <div class="info">
-                <div class="nome">GIN TROPICAL PURO DOSE</div>
-                <div class="preco">R$ 10,00</div>
-                <button class="botao">Selecionar</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="melancia.png">
-            <div class="info">
-                <div class="nome">GIN MELANCIA PURO DOSE</div>
-                <div class="preco">R$ 10,00</div>
-                <button class="botao">Selecionar</button>
-            </div>
-        </div>
-
-    </div>
+<!-- TELA APROVADO -->
+<div id="aprovado" class="tela">
+    <h1>Pagamento aprovado</h1>
+    <p>Posicione o copo e aperte o botão</p>
 </div>
 
 <script>
-function irParaBebidas() {
-    const inicio = document.getElementById("inicio");
-    const bebidas = document.getElementById("bebidas");
 
-    inicio.classList.remove("ativa");
+let bebidaSelecionada = null;
+let pedidoId = null;
 
-    setTimeout(() => {
-        bebidas.classList.add("ativa");
-    }, 300);
+// troca de tela
+function mudarTela(id) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById(id).classList.add('ativa');
 }
+
+// escolher bebida
+function escolherBebida(num) {
+    bebidaSelecionada = num;
+
+    fetch("/criar-pagamento", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ bebida: num })
+    })
+    .then(res => res.json())
+    .then(data => {
+        pedidoId = data.id;
+
+        document.getElementById("qrcode").src = data.qrcode;
+
+        mudarTela("pagamento");
+
+        verificarPagamento();
+    });
+}
+
+// polling pagamento
+function verificarPagamento() {
+    let intervalo = setInterval(() => {
+
+        fetch(`/status/${pedidoId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.status === "pago") {
+                clearInterval(intervalo);
+                mudarTela("aprovado");
+                esperarEntrega();
+            }
+
+        });
+
+    }, 2000);
+}
+
+// esperar ESP entregar bebida
+function esperarEntrega() {
+    let intervalo = setInterval(() => {
+
+        fetch(`/entregue/${pedidoId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.status === "ok") {
+                clearInterval(intervalo);
+                mudarTela("inicio");
+            }
+
+        });
+
+    }, 2000);
+}
+
 </script>
 
 </body>
