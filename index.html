@@ -14,7 +14,6 @@ body {
     overflow: hidden;
 }
 
-/* TELAS */
 .tela {
     position: absolute;
     width: 100vw;
@@ -31,7 +30,6 @@ body {
     pointer-events: auto;
 }
 
-/* TELA INICIAL */
 #inicio {
     display: flex;
     align-items: center;
@@ -42,12 +40,9 @@ body {
 #inicio img {
     max-width: 95vw;
     max-height: 95vh;
-    width: auto;
-    height: auto;
     object-fit: contain;
 }
 
-/* BEBIDAS */
 .container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -60,19 +55,13 @@ body {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
-    transition: transform 0.3s;
     cursor: pointer;
-}
-
-.card:hover {
-    transform: scale(1.03);
 }
 
 .card img {
     width: 100%;
     height: 180px;
     object-fit: cover;
-    background-color: #333;
 }
 
 .info {
@@ -82,7 +71,6 @@ body {
 .nome {
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
 }
 
 .preco {
@@ -91,24 +79,7 @@ body {
     font-weight: bold;
 }
 
-.botao {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(45deg, #ff6a00, #ff3c00);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.botao:active {
-    transform: scale(0.95);
-}
-
-/* PAGAMENTO */
-#pagamento {
+#pagamento, #aprovado {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -118,74 +89,58 @@ body {
 #pagamento img {
     width: 250px;
 }
-
-/* APROVADO */
-#aprovado {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
 </style>
 </head>
 
 <body>
 
-<!-- TELA INICIAL -->
-<div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+<div id="inicio" class="tela ativa" onclick="trocarTela('bebidas')">
     <img src="mqn_copao.png">
 </div>
 
-<!-- TELA BEBIDAS -->
 <div id="bebidas" class="tela">
     <div class="container">
 
-        <div class="card">
+        <div class="card" onclick="selecionar(1)">
             <img src="combotropical.png">
             <div class="info">
-                <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+                <div class="nome">GIN + ENERGÉTICO TROPICAL</div>
                 <div class="preco">R$ 0,50</div>
-                <button class="botao" onclick="selecionar(1)">Selecionar</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="selecionar(2)">
             <img src="combomelacia.png">
             <div class="info">
-                <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+                <div class="nome">GIN + ENERGÉTICO MELANCIA</div>
                 <div class="preco">R$ 0,50</div>
-                <button class="botao" onclick="selecionar(2)">Selecionar</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="selecionar(3)">
             <img src="tropical.png">
             <div class="info">
-                <div class="nome">GIN TROPICAL PURO DOSE</div>
+                <div class="nome">GIN TROPICAL DOSE</div>
                 <div class="preco">R$ 0,50</div>
-                <button class="botao" onclick="selecionar(3)">Selecionar</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="selecionar(4)">
             <img src="melancia.png">
             <div class="info">
-                <div class="nome">GIN MELANCIA PURO DOSE</div>
+                <div class="nome">GIN MELANCIA DOSE</div>
                 <div class="preco">R$ 0,50</div>
-                <button class="botao" onclick="selecionar(4)">Selecionar</button>
             </div>
         </div>
 
     </div>
 </div>
 
-<!-- PAGAMENTO -->
 <div id="pagamento" class="tela">
     <h1>Escaneie o QR Code</h1>
-    <img id="qrcode" src="">
+    <img id="qrcode">
 </div>
 
-<!-- APROVADO -->
 <div id="aprovado" class="tela">
     <h1>Pagamento aprovado</h1>
     <p>Posicione o copo e aperte o botão</p>
@@ -195,29 +150,23 @@ body {
 
 let pedidoId = null;
 
-// trocar tela
-function trocarTela(id) {
-    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+function trocarTela(id){
+    document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'));
     document.getElementById(id).classList.add('ativa');
 }
 
-function irParaBebidas() {
-    trocarTela("bebidas");
-}
-
-// selecionar bebida
-function selecionar(bebida) {
+function selecionar(bebida){
 
     fetch("/criar-pagamento", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ bebida: bebida })
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({bebida})
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(r=>r.json())
+    .then(d=>{
 
-        pedidoId = data.id;
-        document.getElementById("qrcode").src = data.qrcode;
+        pedidoId = d.id;
+        document.getElementById("qrcode").src = d.qrcode;
 
         trocarTela("pagamento");
 
@@ -225,43 +174,41 @@ function selecionar(bebida) {
     });
 }
 
-// verificar pagamento
-function verificarPagamento() {
+function verificarPagamento(){
 
-    let intervalo = setInterval(() => {
+    let i = setInterval(()=>{
 
-        fetch(`/status/${pedidoId}`)
-        .then(res => res.json())
-        .then(data => {
+        fetch("/status/"+pedidoId)
+        .then(r=>r.json())
+        .then(d=>{
 
-            if (data.status === "pago") {
-                clearInterval(intervalo);
+            if(d.status==="pago"){
+                clearInterval(i);
                 trocarTela("aprovado");
                 esperarEntrega();
             }
 
         });
 
-    }, 2000);
+    },2000);
 }
 
-// esperar ESP
-function esperarEntrega() {
+function esperarEntrega(){
 
-    let intervalo = setInterval(() => {
+    let i = setInterval(()=>{
 
-        fetch(`/entregue/${pedidoId}`)
-        .then(res => res.json())
-        .then(data => {
+        fetch("/entregue/"+pedidoId)
+        .then(r=>r.json())
+        .then(d=>{
 
-            if (data.status === "ok") {
-                clearInterval(intervalo);
+            if(d.status==="ok"){
+                clearInterval(i);
                 trocarTela("inicio");
             }
 
         });
 
-    }, 2000);
+    },2000);
 }
 
 </script>
