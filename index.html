@@ -1,217 +1,52 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Máquina do Copão</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #0f0f0f;
-    color: white;
-    overflow: hidden;
-}
-
-.tela {
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease;
-}
-
-.ativa {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#inicio {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: black;
-}
-
-#inicio img {
-    max-width: 95vw;
-    max-height: 95vh;
-    object-fit: contain;
-}
-
-.container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px;
-}
-
-.card {
-    background: #1a1a1a;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
-    cursor: pointer;
-}
-
-.card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.info {
-    padding: 15px;
-}
-
-.nome {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.preco {
-    font-size: 20px;
-    color: #ff6a00;
-    font-weight: bold;
-}
-
-#pagamento, #aprovado {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-#pagamento img {
-    width: 250px;
-}
-</style>
-</head>
-
-<body>
-
-<div id="inicio" class="tela ativa" onclick="trocarTela('bebidas')">
-    <img src="mqn_copao.png">
-</div>
-
-<div id="bebidas" class="tela">
-    <div class="container">
-
-        <div class="card" onclick="selecionar(1)">
-            <img src="combotropical.png">
-            <div class="info">
-                <div class="nome">GIN + ENERGÉTICO TROPICAL</div>
-                <div class="preco">R$ 0,50</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="selecionar(2)">
-            <img src="combomelacia.png">
-            <div class="info">
-                <div class="nome">GIN + ENERGÉTICO MELANCIA</div>
-                <div class="preco">R$ 0,50</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="selecionar(3)">
-            <img src="tropical.png">
-            <div class="info">
-                <div class="nome">GIN TROPICAL DOSE</div>
-                <div class="preco">R$ 0,50</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="selecionar(4)">
-            <img src="melancia.png">
-            <div class="info">
-                <div class="nome">GIN MELANCIA DOSE</div>
-                <div class="preco">R$ 0,50</div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<div id="pagamento" class="tela">
-    <h1>Escaneie o QR Code</h1>
-    <img id="qrcode">
-</div>
-
-<div id="aprovado" class="tela">
-    <h1>Pagamento aprovado</h1>
-    <p>Posicione o copo e aperte o botão</p>
-</div>
-
 <script>
+        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; 
 
-let pedidoId = null;
+        function irParaBebidas() {
+            document.getElementById("inicio").classList.remove("ativa");
+            document.getElementById("bebidas").classList.add("ativa");
+        }
 
-function trocarTela(id){
-    document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'));
-    document.getElementById(id).classList.add('ativa');
-}
+        async function selecionarBebida(nome) {
+            document.getElementById('bebidas').classList.remove('ativa');
+            document.getElementById('pagamento').classList.add('ativa');
+            document.getElementById('msg-status').innerText = "Gerando QR Code...";
+            document.getElementById('qr-code-img').style.display = 'block';
 
-function selecionar(bebida){
+            // Solicita o QR Code para o servidor
+            const res = await fetch(`${API_URL}/criar-pagamento`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bebida: nome })
+            });
+            const data = await res.json();
+            
+            // Exibe a imagem do QR Code recebida
+            document.getElementById('qr-code-img').src = data.qrcode;
+            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
 
-    fetch("/criar-pagamento", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({bebida})
-    })
-    .then(r=>r.json())
-    .then(d=>{
+            // Inicia o monitoramento (agora o servidor monitora, nós só avisamos o cliente)
+            aguardarConfirmacao();
+        }
 
-        pedidoId = d.id;
-        document.getElementById("qrcode").src = d.qrcode;
+        function aguardarConfirmacao() {
+            // O front-end fica perguntando ao servidor se a liberação foi autorizada
+            // Vamos usar o ESP para isso? Ou o front-end também quer saber?
+            // Baseado no seu fluxo, o servidor muda o status para "liberar".
+            // Vamos adicionar uma rota simples no servidor para o Front saber quando liberar:
+            
+            const intervalo = setInterval(async () => {
+                const res = await fetch(`${API_URL}/verificar-acao`);
+                const data = await res.json();
 
-        trocarTela("pagamento");
-
-        verificarPagamento();
-    });
-}
-
-function verificarPagamento(){
-
-    let i = setInterval(()=>{
-
-        fetch("/status/"+pedidoId)
-        .then(r=>r.json())
-        .then(d=>{
-
-            if(d.status==="pago"){
-                clearInterval(i);
-                trocarTela("aprovado");
-                esperarEntrega();
-            }
-
-        });
-
-    },2000);
-}
-
-function esperarEntrega(){
-
-    let i = setInterval(()=>{
-
-        fetch("/entregue/"+pedidoId)
-        .then(r=>r.json())
-        .then(d=>{
-
-            if(d.status==="ok"){
-                clearInterval(i);
-                trocarTela("inicio");
-            }
-
-        });
-
-    },2000);
-}
-
-</script>
-
-</body>
-</html>
+                if (data.comando === "liberar") {
+                    clearInterval(intervalo);
+                    document.getElementById('msg-status').innerText = 
+                        `Pagamento Aprovado! Liberando ${data.bebida}...`;
+                    document.getElementById('qr-code-img').style.display = 'none';
+                    
+                    // Opcional: Voltar para o início após alguns segundos
+                    setTimeout(() => location.reload(), 5000);
+                }
+            }, 1000); // Verifica a cada 1 segundo
+        }
+    </script>
