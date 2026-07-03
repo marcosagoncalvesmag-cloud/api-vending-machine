@@ -13,10 +13,9 @@
         
         .container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; }
         .card { background: #1a1a1a; border-radius: 15px; padding: 15px; text-align: center; }
-        .botao { background: linear-gradient(45deg, #ff6a00, #ff3c00); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; }
+        .botao { background: linear-gradient(45deg, #ff6a00, #ff3c00); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
         
-        #msg-status { font-size: 24px; margin-bottom: 20px; text-align: center; }
-        #qr-code-img { width: 250px; background: white; padding: 10px; border-radius: 10px; }
+        #msg-status { font-size: 24px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -29,68 +28,58 @@
     <!-- TELA BEBIDAS -->
     <div id="bebidas" class="tela">
         <div class="container">
-            <div class="card"><div class="nome">GIN TROPICAL</div><button class="botao" onclick="selecionarBebida('01')">Selecionar</button></div>
-            <div class="card"><div class="nome">BEBIDA 02</div><button class="botao" onclick="selecionarBebida('02')">Selecionar</button></div>
-            <div class="card"><div class="nome">BEBIDA 03</div><button class="botao" onclick="selecionarBebida('03')">Selecionar</button></div>
-            <div class="card"><div class="nome">BEBIDA 04</div><button class="botao" onclick="selecionarBebida('04')">Selecionar</button></div>
+            <div class="card">
+                <div class="nome">GIN TROPICAL</div>
+                <button class="botao" onclick="selecionarBebida('GIN TROPICAL')">Selecionar</button>
+            </div>
+            <!-- Adicione os outros cards aqui -->
         </div>
     </div>
 
     <!-- TELA PAGAMENTO -->
     <div id="pagamento" class="tela">
         <h2 id="msg-status">Gerando QR Code...</h2>
-        <img id="qr-code-img" src="" alt="QR Code Pix">
+        <img id="qr-code-img" src="" style="width: 250px; background: white; padding: 10px;">
     </div>
 
     <script>
-        // MANTENHA A URL DO SEU NGROK AQUI
-        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; 
+        const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; // MUDAR PARA A URL DO SERVIDOR
+        let pedidoIdAtual = null;
 
         function irParaBebidas() {
             document.getElementById("inicio").classList.remove("ativa");
             document.getElementById("bebidas").classList.add("ativa");
         }
 
-        async function selecionarBebida(codigoBebida) {
+        async function selecionarBebida(nome) {
             document.getElementById('bebidas').classList.remove('ativa');
             document.getElementById('pagamento').classList.add('ativa');
-            document.getElementById('msg-status').innerText = "Gerando QR Code...";
 
-            try {
-                const res = await fetch(`${API_URL}/criar-pagamento`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bebida: codigoBebida })
-                });
-                const data = await res.json();
-                
-                document.getElementById('qr-code-img').src = data.qrcode;
-                document.getElementById('msg-status').innerText = "Escaneie o QR Code para pagar";
+            const res = await fetch(`${API_URL}/criar-pagamento`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bebida: nome })
+            });
+            const data = await res.json();
+            
+            pedidoIdAtual = data.id;
+            document.getElementById('qr-code-img').src = data.qrcode;
+            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
 
-                monitorarPagamento();
-            } catch (e) {
-                document.getElementById('msg-status').innerText = "Erro ao conectar ao servidor.";
-            }
+            verificarPagamento();
         }
 
-        function monitorarPagamento() {
+        function verificarPagamento() {
             const intervalo = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_URL}/verificar-acao`);
-                    const data = await res.json();
+                const res = await fetch(`${API_URL}/status/${pedidoIdAtual}`);
+                const data = await res.json();
 
-                    if (data.comando === "liberar") {
-                        clearInterval(intervalo);
-                        document.getElementById('msg-status').innerText = "Pagamento Aprovado! Liberando bebida " + data.bebida;
-                        document.getElementById('qr-code-img').style.display = 'none';
-                        
-                        // Volta para o início após 5 segundos
-                        setTimeout(() => location.reload(), 5000);
-                    }
-                } catch (e) {
-                    console.error("Erro ao verificar ação");
+                if (data.status === "pago") {
+                    clearInterval(intervalo);
+                    document.getElementById('msg-status').innerText = "Pagamento Aprovado! Posicione o copo e aperte o botão.";
+                    document.getElementById('qr-code-img').style.display = 'none';
                 }
-            }, 1000);
+            }, 3000); // Verifica a cada 3 segundos
         }
     </script>
 </body>
