@@ -1,4 +1,49 @@
-<script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquina do Copão</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #0f0f0f; color: white; overflow: hidden; }
+        .tela { position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .ativa { opacity: 1; pointer-events: auto; }
+        
+        #inicio img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: pointer; }
+        
+        .container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; }
+        .card { background: #1a1a1a; border-radius: 15px; padding: 15px; text-align: center; }
+        .botao { background: linear-gradient(45deg, #ff6a00, #ff3c00); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; }
+        
+        #msg-status { font-size: 24px; margin-bottom: 20px; text-align: center; }
+        #qr-code-img { width: 250px; background: white; padding: 10px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+        <img src="mqn_copao.png" alt="Início">
+    </div>
+
+    <!-- TELA BEBIDAS -->
+    <div id="bebidas" class="tela">
+        <div class="container">
+            <div class="card"><div class="nome">GIN TROPICAL</div><button class="botao" onclick="selecionarBebida('01')">Selecionar</button></div>
+            <div class="card"><div class="nome">BEBIDA 02</div><button class="botao" onclick="selecionarBebida('02')">Selecionar</button></div>
+            <div class="card"><div class="nome">BEBIDA 03</div><button class="botao" onclick="selecionarBebida('03')">Selecionar</button></div>
+            <div class="card"><div class="nome">BEBIDA 04</div><button class="botao" onclick="selecionarBebida('04')">Selecionar</button></div>
+        </div>
+    </div>
+
+    <!-- TELA PAGAMENTO -->
+    <div id="pagamento" class="tela">
+        <h2 id="msg-status">Gerando QR Code...</h2>
+        <img id="qr-code-img" src="" alt="QR Code Pix">
+    </div>
+
+    <script>
+        // MANTENHA A URL DO SEU NGROK AQUI
         const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; 
 
         function irParaBebidas() {
@@ -6,47 +51,47 @@
             document.getElementById("bebidas").classList.add("ativa");
         }
 
-        async function selecionarBebida(nome) {
+        async function selecionarBebida(codigoBebida) {
             document.getElementById('bebidas').classList.remove('ativa');
             document.getElementById('pagamento').classList.add('ativa');
             document.getElementById('msg-status').innerText = "Gerando QR Code...";
-            document.getElementById('qr-code-img').style.display = 'block';
 
-            // Solicita o QR Code para o servidor
-            const res = await fetch(`${API_URL}/criar-pagamento`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bebida: nome })
-            });
-            const data = await res.json();
-            
-            // Exibe a imagem do QR Code recebida
-            document.getElementById('qr-code-img').src = data.qrcode;
-            document.getElementById('msg-status').innerText = "Aguardando pagamento...";
+            try {
+                const res = await fetch(`${API_URL}/criar-pagamento`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bebida: codigoBebida })
+                });
+                const data = await res.json();
+                
+                document.getElementById('qr-code-img').src = data.qrcode;
+                document.getElementById('msg-status').innerText = "Escaneie o QR Code para pagar";
 
-            // Inicia o monitoramento (agora o servidor monitora, nós só avisamos o cliente)
-            aguardarConfirmacao();
+                monitorarPagamento();
+            } catch (e) {
+                document.getElementById('msg-status').innerText = "Erro ao conectar ao servidor.";
+            }
         }
 
-        function aguardarConfirmacao() {
-            // O front-end fica perguntando ao servidor se a liberação foi autorizada
-            // Vamos usar o ESP para isso? Ou o front-end também quer saber?
-            // Baseado no seu fluxo, o servidor muda o status para "liberar".
-            // Vamos adicionar uma rota simples no servidor para o Front saber quando liberar:
-            
+        function monitorarPagamento() {
             const intervalo = setInterval(async () => {
-                const res = await fetch(`${API_URL}/verificar-acao`);
-                const data = await res.json();
+                try {
+                    const res = await fetch(`${API_URL}/verificar-acao`);
+                    const data = await res.json();
 
-                if (data.comando === "liberar") {
-                    clearInterval(intervalo);
-                    document.getElementById('msg-status').innerText = 
-                        `Pagamento Aprovado! Liberando ${data.bebida}...`;
-                    document.getElementById('qr-code-img').style.display = 'none';
-                    
-                    // Opcional: Voltar para o início após alguns segundos
-                    setTimeout(() => location.reload(), 5000);
+                    if (data.comando === "liberar") {
+                        clearInterval(intervalo);
+                        document.getElementById('msg-status').innerText = "Pagamento Aprovado! Liberando bebida " + data.bebida;
+                        document.getElementById('qr-code-img').style.display = 'none';
+                        
+                        // Volta para o início após 5 segundos
+                        setTimeout(() => location.reload(), 5000);
+                    }
+                } catch (e) {
+                    console.error("Erro ao verificar ação");
                 }
-            }, 1000); // Verifica a cada 1 segundo
+            }, 1000);
         }
     </script>
+</body>
+</html>
