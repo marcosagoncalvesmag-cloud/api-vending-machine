@@ -11,9 +11,34 @@ body {
     font-family: Arial, sans-serif;
     background-color: #0f0f0f;
     color: white;
+    overflow: hidden;
 }
 
-/* GRID DAS BEBIDAS */
+/* TELAS */
+.tela {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+
+.ativa {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* TELA INICIAL */
+#inicio img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* GRID BEBIDAS */
 .container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -27,7 +52,7 @@ body {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
-    transition: 0.3s;
+    transition: transform 0.3s;
     cursor: pointer;
 }
 
@@ -35,7 +60,6 @@ body {
     transform: scale(1.03);
 }
 
-/* IMAGEM (placeholder por enquanto) */
 .card img {
     width: 100%;
     height: 180px;
@@ -43,7 +67,6 @@ body {
     background-color: #333;
 }
 
-/* TEXTO */
 .info {
     padding: 15px;
 }
@@ -60,7 +83,6 @@ body {
     font-weight: bold;
 }
 
-/* BOTÃO */
 .botao {
     margin-top: 10px;
     padding: 10px;
@@ -82,45 +104,68 @@ body {
 
 <body>
 
-<div class="container">
-
-    <div class="card">
-        <img src="img1.png">
-        <div class="info">
-            <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
-            <div class="preco">R$ 15,00</div>
-            <button class="botao">Selecionar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <img src="img2.png">
-        <div class="info">
-            <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
-            <div class="preco">R$ 15,00</div>
-            <button class="botao">Selecionar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <img src="img3.png">
-        <div class="info">
-            <div class="nome">GIN TROPICAL PURO DOSE</div>
-            <div class="preco">R$ 10,00</div>
-            <button class="botao">Selecionar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <img src="img4.png">
-        <div class="info">
-            <div class="nome">GIN MELANCIA PURO DOSE</div>
-            <div class="preco">R$ 10,00</div>
-            <button class="botao">Selecionar</button>
-        </div>
-    </div>
-
+<!-- TELA INICIAL -->
+<div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+    <img src="mqn_copao.png">
 </div>
+
+<!-- TELA BEBIDAS -->
+<div id="bebidas" class="tela">
+    <div class="container">
+
+        <div class="card">
+            <img src="img1.png">
+            <div class="info">
+                <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+                <div class="preco">R$ 15,00</div>
+                <button class="botao">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="img2.png">
+            <div class="info">
+                <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+                <div class="preco">R$ 15,00</div>
+                <button class="botao">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="img3.png">
+            <div class="info">
+                <div class="nome">GIN TROPICAL PURO DOSE</div>
+                <div class="preco">R$ 10,00</div>
+                <button class="botao">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="img4.png">
+            <div class="info">
+                <div class="nome">GIN MELANCIA PURO DOSE</div>
+                <div class="preco">R$ 10,00</div>
+                <button class="botao">Selecionar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function irParaBebidas() {
+    const inicio = document.getElementById("inicio");
+    const bebidas = document.getElementById("bebidas");
+
+    // inicia fade out
+    inicio.classList.remove("ativa");
+
+    // espera terminar a animação e troca
+    setTimeout(() => {
+        bebidas.classList.add("ativa");
+    }, 300);
+}
+</script>
 
 </body>
 </html>
