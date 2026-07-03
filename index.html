@@ -1,38 +1,130 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Máquina do Copão</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #111;
-    color: #fff;
-    text-align: center;
+    background-color: #0f0f0f;
+    color: white;
+    overflow: hidden;
 }
 
+/* TELAS */
 .tela {
-    display: none;
+    position: absolute;
+    width: 100vw;
     height: 100vh;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+
+.ativa {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* TELA INICIAL */
+#inicio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+}
+
+#inicio img {
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* BEBIDAS */
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: #1a1a1a;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: scale(1.03);
+}
+
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.info {
+    padding: 15px;
+}
+
+.nome {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.preco {
+    font-size: 20px;
+    color: #ff6a00;
+    font-weight: bold;
+}
+
+.botao {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #ff6a00, #ff3c00);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.botao:active {
+    transform: scale(0.95);
+}
+
+/* PAGAMENTO */
+#pagamento {
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
 
-.ativa {
-    display: flex;
+#pagamento img {
+    width: 250px;
 }
 
-button {
-    padding: 20px;
-    margin: 10px;
-    font-size: 20px;
-    background: orange;
-    border: none;
-    border-radius: 10px;
-    color: #000;
+/* APROVADO */
+#aprovado {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 </style>
 </head>
@@ -40,21 +132,60 @@ button {
 <body>
 
 <!-- TELA INICIAL -->
-<div id="inicio" class="tela ativa">
-    <h1>Escolha sua bebida</h1>
-
-    <button onclick="escolherBebida(1)">Bebida 1 - R$0,50</button>
-    <button onclick="escolherBebida(2)">Bebida 2 - R$0,50</button>
-    <button onclick="escolherBebida(3)">Bebida 3 - R$0,50</button>
+<div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+    <img src="mqn_copao.png">
 </div>
 
-<!-- TELA PAGAMENTO -->
+<!-- TELA BEBIDAS -->
+<div id="bebidas" class="tela">
+    <div class="container">
+
+        <div class="card">
+            <img src="combotropical.png">
+            <div class="info">
+                <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+                <div class="preco">R$ 0,50</div>
+                <button class="botao" onclick="selecionar(1)">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="combomelacia.png">
+            <div class="info">
+                <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+                <div class="preco">R$ 0,50</div>
+                <button class="botao" onclick="selecionar(2)">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="tropical.png">
+            <div class="info">
+                <div class="nome">GIN TROPICAL PURO DOSE</div>
+                <div class="preco">R$ 0,50</div>
+                <button class="botao" onclick="selecionar(3)">Selecionar</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="melancia.png">
+            <div class="info">
+                <div class="nome">GIN MELANCIA PURO DOSE</div>
+                <div class="preco">R$ 0,50</div>
+                <button class="botao" onclick="selecionar(4)">Selecionar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- PAGAMENTO -->
 <div id="pagamento" class="tela">
     <h1>Escaneie o QR Code</h1>
-    <img id="qrcode" src="" width="200">
+    <img id="qrcode" src="">
 </div>
 
-<!-- TELA APROVADO -->
+<!-- APROVADO -->
 <div id="aprovado" class="tela">
     <h1>Pagamento aprovado</h1>
     <p>Posicione o copo e aperte o botão</p>
@@ -62,38 +193,41 @@ button {
 
 <script>
 
-let bebidaSelecionada = null;
 let pedidoId = null;
 
-// troca de tela
-function mudarTela(id) {
+// trocar tela
+function trocarTela(id) {
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
     document.getElementById(id).classList.add('ativa');
 }
 
-// escolher bebida
-function escolherBebida(num) {
-    bebidaSelecionada = num;
+function irParaBebidas() {
+    trocarTela("bebidas");
+}
+
+// selecionar bebida
+function selecionar(bebida) {
 
     fetch("/criar-pagamento", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ bebida: num })
+        body: JSON.stringify({ bebida: bebida })
     })
     .then(res => res.json())
     .then(data => {
-        pedidoId = data.id;
 
+        pedidoId = data.id;
         document.getElementById("qrcode").src = data.qrcode;
 
-        mudarTela("pagamento");
+        trocarTela("pagamento");
 
         verificarPagamento();
     });
 }
 
-// polling pagamento
+// verificar pagamento
 function verificarPagamento() {
+
     let intervalo = setInterval(() => {
 
         fetch(`/status/${pedidoId}`)
@@ -102,7 +236,7 @@ function verificarPagamento() {
 
             if (data.status === "pago") {
                 clearInterval(intervalo);
-                mudarTela("aprovado");
+                trocarTela("aprovado");
                 esperarEntrega();
             }
 
@@ -111,8 +245,9 @@ function verificarPagamento() {
     }, 2000);
 }
 
-// esperar ESP entregar bebida
+// esperar ESP
 function esperarEntrega() {
+
     let intervalo = setInterval(() => {
 
         fetch(`/entregue/${pedidoId}`)
@@ -121,7 +256,7 @@ function esperarEntrega() {
 
             if (data.status === "ok") {
                 clearInterval(intervalo);
-                mudarTela("inicio");
+                trocarTela("inicio");
             }
 
         });
