@@ -1,86 +1,172 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Máquina do Copão</title>
+
     <style>
+
         body { margin: 0; font-family: Arial, sans-serif; background-color: #0f0f0f; color: white; overflow: hidden; }
+
         .tela { position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+
         .ativa { opacity: 1; pointer-events: auto; }
+
         
+
         #inicio img { max-width: 95vw; max-height: 95vh; object-fit: contain; cursor: pointer; }
+
         
+
         .container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; }
+
         .card { background: #1a1a1a; border-radius: 15px; padding: 15px; text-align: center; }
+
         .botao { background: linear-gradient(45deg, #ff6a00, #ff3c00); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+
         
+
         #msg-status { font-size: 24px; margin-bottom: 20px; }
+
     </style>
+
 </head>
+
 <body>
 
+
+
     <!-- TELA INICIAL -->
+
     <div id="inicio" class="tela ativa" onclick="irParaBebidas()">
+
         <img src="mqn_copao.png" alt="Início">
+
     </div>
+
+
 
     <!-- TELA BEBIDAS -->
+
     <div id="bebidas" class="tela">
+
         <div class="container">
+
             <div class="card">
+
                 <div class="nome">GIN TROPICAL</div>
+
                 <button class="botao" onclick="selecionarBebida('GIN TROPICAL')">Selecionar</button>
+
             </div>
+
             <!-- Adicione os outros cards aqui -->
+
         </div>
+
     </div>
+
+
 
     <!-- TELA PAGAMENTO -->
+
     <div id="pagamento" class="tela">
+
         <h2 id="msg-status">Gerando QR Code...</h2>
+
         <img id="qr-code-img" src="" style="width: 250px; background: white; padding: 10px;">
+
     </div>
 
+
+
     <script>
+
         const API_URL = 'https://perennial-overload-slit.ngrok-free.dev'; // MUDAR PARA A URL DO SERVIDOR
+
         let pedidoIdAtual = null;
 
+
+
         function irParaBebidas() {
+
             document.getElementById("inicio").classList.remove("ativa");
+
             document.getElementById("bebidas").classList.add("ativa");
+
         }
+
+
 
         async function selecionarBebida(nome) {
+
             document.getElementById('bebidas').classList.remove('ativa');
+
             document.getElementById('pagamento').classList.add('ativa');
 
+
+
             const res = await fetch(`${API_URL}/criar-pagamento`, {
+
                 method: 'POST',
+
                 headers: { 'Content-Type': 'application/json' },
+
                 body: JSON.stringify({ bebida: nome })
+
             });
+
             const data = await res.json();
+
             
+
             pedidoIdAtual = data.id;
+
             document.getElementById('qr-code-img').src = data.qrcode;
+
             document.getElementById('msg-status').innerText = "Aguardando pagamento...";
 
+
+
             verificarPagamento();
+
         }
+
+
 
         function verificarPagamento() {
+
             const intervalo = setInterval(async () => {
+
                 const res = await fetch(`${API_URL}/status/${pedidoIdAtual}`);
+
                 const data = await res.json();
 
+
+
                 if (data.status === "pago") {
+
                     clearInterval(intervalo);
+
                     document.getElementById('msg-status').innerText = "Pagamento Aprovado! Posicione o copo e aperte o botão.";
+
                     document.getElementById('qr-code-img').style.display = 'none';
+
                 }
+
             }, 3000); // Verifica a cada 3 segundos
+
         }
+
     </script>
+
 </body>
-</html>
+
+</html> 
+
