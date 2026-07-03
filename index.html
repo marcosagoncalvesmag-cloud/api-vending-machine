@@ -1,215 +1,126 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Totem Bebidas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Máquina do Copão</title>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #0f0f0f;
+    color: white;
+}
 
-    body {
-      background: black;
-      height: 100vh;
-      overflow: hidden;
-      color: white;
-    }
+/* GRID DAS BEBIDAS */
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
 
-    .tela {
-      display: none;
-      width: 100%;
-      height: 100vh;
-    }
+/* CARD */
+.card {
+    background: #1a1a1a;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
+    transition: 0.3s;
+    cursor: pointer;
+}
 
-    .ativa {
-      display: flex;
-    }
+.card:hover {
+    transform: scale(1.03);
+}
 
-    /* 🔥 TELA INICIAL */
-    #inicio {
-      justify-content: center;
-      align-items: center;
+/* IMAGEM (placeholder por enquanto) */
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #333;
+}
 
-      background-image: url("./mqn_copao.png");
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: contain;
+/* TEXTO */
+.info {
+    padding: 15px;
+}
 
-      animation: acender 0.6s ease-out forwards;
-    }
+.nome {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 
-    @keyframes acender {
-      from {
-        filter: brightness(0);
-      }
-      to {
-        filter: brightness(1);
-      }
-    }
+.preco {
+    font-size: 20px;
+    color: #ff6a00;
+    font-weight: bold;
+}
 
-    /* 🛒 TELA DE BEBIDAS */
-    #bebidas {
-      display: flex;
-    }
+/* BOTÃO */
+.botao {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #ff6a00, #ff3c00);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-    /* lado esquerdo (produtos) */
-    .produtos {
-      width: 70%;
-      background: #111;
-      padding: 20px;
+.botao:active {
+    transform: scale(0.95);
+}
+</style>
 
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-
-    .card {
-      background: #222;
-      border-radius: 12px;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .imagem {
-      width: 100%;
-      height: 150px;
-      background: #333;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .nome {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-    }
-
-    .preco {
-      font-size: 1.4rem;
-      color: #00e676;
-      margin-bottom: 10px;
-    }
-
-    .btn {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #00c853;
-      color: white;
-      font-size: 1rem;
-    }
-
-    /* lado direito (carrinho) */
-    .carrinho {
-      width: 30%;
-      background: #000;
-      border-left: 2px solid #222;
-      padding: 20px;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .carrinho h2 {
-      margin-bottom: 20px;
-    }
-
-    .itens {
-      flex: 1;
-    }
-
-    .total {
-      font-size: 1.5rem;
-      margin-top: 20px;
-    }
-
-  </style>
 </head>
 
 <body>
 
-  <!-- TELA INICIAL -->
-  <div id="inicio" class="tela ativa"></div>
+<div class="container">
 
-  <!-- TELA DE BEBIDAS -->
-  <div id="bebidas" class="tela">
-
-    <!-- PRODUTOS -->
-    <div class="produtos">
-
-      <div class="card">
-        <div class="imagem"></div>
-        <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
-        <div class="preco">R$ 15,00</div>
-        <button class="btn" onclick="addItem('Tropical', 15)">Adicionar</button>
-      </div>
-
-      <div class="card">
-        <div class="imagem"></div>
-        <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
-        <div class="preco">R$ 15,00</div>
-        <button class="btn" onclick="addItem('Melancia', 15)">Adicionar</button>
-      </div>
-
-      <div class="card">
-        <div class="imagem"></div>
-        <div class="nome">GIN TROPICAL PURO DOSE</div>
-        <div class="preco">R$ 10,00</div>
-        <button class="btn" onclick="addItem('Tropical Puro', 10)">Adicionar</button>
-      </div>
-
-      <div class="card">
-        <div class="imagem"></div>
-        <div class="nome">GIN MELANCIA PURO DOSE</div>
-        <div class="preco">R$ 10,00</div>
-        <button class="btn" onclick="addItem('Melancia Puro', 10)">Adicionar</button>
-      </div>
-
+    <div class="card">
+        <img src="img1.png">
+        <div class="info">
+            <div class="nome">GIN + ENERGÉTICO TROPICAL SEM GELO</div>
+            <div class="preco">R$ 15,00</div>
+            <button class="botao">Selecionar</button>
+        </div>
     </div>
 
-    <!-- CARRINHO -->
-    <div class="carrinho">
-      <h2>Carrinho</h2>
-
-      <div class="itens" id="itens"></div>
-
-      <div class="total" id="total">Total: R$ 0,00</div>
+    <div class="card">
+        <img src="img2.png">
+        <div class="info">
+            <div class="nome">GIN + ENERGÉTICO MELANCIA SEM GELO</div>
+            <div class="preco">R$ 15,00</div>
+            <button class="botao">Selecionar</button>
+        </div>
     </div>
 
-  </div>
+    <div class="card">
+        <img src="img3.png">
+        <div class="info">
+            <div class="nome">GIN TROPICAL PURO DOSE</div>
+            <div class="preco">R$ 10,00</div>
+            <button class="botao">Selecionar</button>
+        </div>
+    </div>
 
-  <script>
-    const telaInicio = document.getElementById("inicio");
-    const telaBebidas = document.getElementById("bebidas");
+    <div class="card">
+        <img src="img4.png">
+        <div class="info">
+            <div class="nome">GIN MELANCIA PURO DOSE</div>
+            <div class="preco">R$ 10,00</div>
+            <button class="botao">Selecionar</button>
+        </div>
+    </div>
 
-    let total = 0;
-
-    telaInicio.addEventListener("click", () => {
-      telaInicio.classList.remove("ativa");
-      telaBebidas.classList.add("ativa");
-    });
-
-    function addItem(nome, valor) {
-      const lista = document.getElementById("itens");
-
-      const item = document.createElement("div");
-      item.innerText = nome + " - R$ " + valor.toFixed(2);
-
-      lista.appendChild(item);
-
-      total += valor;
-
-      document.getElementById("total").innerText =
-        "Total: R$ " + total.toFixed(2);
-    }
-  </script>
+</div>
 
 </body>
 </html>
